@@ -1,0 +1,19 @@
+{
+  "name": "tcp-server",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000T\u0000C\u0000P\u0000_\u0000s\u0000e\u0000r\u0000v\u0000e\u0000r\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedrofrancescon/TCP_server.git"
+  },
+  "author": "Pedro Francescon Cittolin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pedrofrancescon/TCP_server/issues"
+  },
+  "homepage": "https://github.com/pedrofrancescon/TCP_server#readme"
+}
