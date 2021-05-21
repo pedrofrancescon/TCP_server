@@ -1,14 +1,18 @@
 //@ts-check
 const net = require('net');
-const fs = require('fs/promises')
-const port = 4321;
+const fs = require('fs').promises
+const port = 50000;
 const host = '127.0.0.1';
+const CRLF = "\r\n";
 
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 
+const mime = require('mime-types')
+
+let sockets = [];
+
 if (cluster.isMaster) {
-    // Fork workers.
     for (var i = 0; i < numCPUs; i++) {
       cluster.fork();
     }
@@ -19,22 +23,28 @@ if (cluster.isMaster) {
   } else {
     const server = net.createServer();
     server.listen(port, host, () => {
-        //console.log('TCP Server is running on port ' + port + '.');
+        console.log('TCP Server is running on port ' + port + '.');
     });
 
     server.on('connection', (sock) => {
-        //console.log('CONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort);
+        // console.log('CONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort);
 
-        sock.on('data', async function(data) {
-            let dataStr = data.toString();
+        sockets.push(sock)
+		
+		sock.on('data', async function(data) {
+			let dataStr = data.toString();
             let tokenizedStr = dataStr.split(' ');
             let fileStr = '.' + tokenizedStr[1];
 
             let fileExists = true;
+			let file = '';
             
-            let file = await fs.readFile(fileStr,'utf8')
-            .catch((error) => {
-                fileExists = false;
+            await fs.readFile(fileStr, 'utf8')
+            .then((data) => {
+				file = data;
+			})
+			.catch((error) => {
+				fileExists = false;
             });
 
             let statusLine = null;
@@ -42,21 +52,33 @@ if (cluster.isMaster) {
             let entityBody = null;
 
             if (fileExists) {
-
+              	statusLine = 'HTTP/1.0 200 OK' + CRLF;
+				contentTypeLine = 'Content-Type: ' + mime.lookup(fileStr) + CRLF; 
             } else {
-                statusLine = '404 Not Found';
-                entityBody = "<HTML>" +
-                            "<HEAD><TITLE>Not Found</TITLE></HEAD>" +
-                            "<BODY>Not Found</BODY></HTML>";
-
+                statusLine = 'HTTP/1.0 404 Not Found' + CRLF;
+                contentTypeLine = 'Content-Type: ' + 'text/html' + CRLF;
+                let failFile = await fs.readFile('./fail.html', 'utf8')
+                entityBody = failFile;
             }
-
+			
+			sock.write(statusLine);
+			sock.write(contentTypeLine);
+			sock.write(CRLF);
             
+			if (fileExists) {
+				sock.write(file);
+			} else {
+				sock.write(entityBody);
+			}
             
         });
 
         sock.on('close', function(data) {
+			//console.log('Socket closed!')
+        });
 
+		sock.on('error', function(err) {
+			//console.log(err)
         });
         
     });
