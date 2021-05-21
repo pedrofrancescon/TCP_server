@@ -19,5 +19,7 @@
   "dependencies": {
     "mime-types": "^2.1.30"
   },
-  "bundledDependencies": ["mime-types"]
+  "bundledDependencies": [
+    "mime-types"
+  ]
 }

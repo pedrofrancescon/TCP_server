@@ -8,7 +8,7 @@ const CRLF = "\r\n";
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 
-const mime = require('mime-types')
+const mime = require('mime-types');
 
 let sockets = [];
 
@@ -20,16 +20,14 @@ if (cluster.isMaster) {
     cluster.on('exit', function(worker, code, signal) {
       //console.log('worker ' + worker.process.pid + ' died');
     });
-  } else {
+} else {
     const server = net.createServer();
     server.listen(port, host, () => {
         console.log('TCP Server is running on port ' + port + '.');
     });
 
     server.on('connection', (sock) => {
-        // console.log('CONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort);
-
-        sockets.push(sock)
+        sockets.push(sock);
 		
 		sock.on('data', async function(data) {
 			let dataStr = data.toString();
@@ -37,9 +35,9 @@ if (cluster.isMaster) {
             let fileStr = '.' + tokenizedStr[1];
 
             let fileExists = true;
-			let file = '';
+			let file = null;
             
-            await fs.readFile(fileStr, 'utf8')
+            await fs.readFile(fileStr)
             .then((data) => {
 				file = data;
 			})
